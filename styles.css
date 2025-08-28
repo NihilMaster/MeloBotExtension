@@ -1,6 +1,6 @@
-/* Estilos para el popup */
+/* ===== ESTILOS PARA EL POPUP ===== */
 .popup-container {
-  width: 300px;
+  width: 320px;
   padding: 15px;
   font-family: Arial, sans-serif;
 }
@@ -11,6 +11,27 @@
   text-align: center;
 }
 
+/* Grupos de formulario */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Secciones de API Key */
 .api-key-section {
   margin-bottom: 15px;
 }
@@ -22,7 +43,8 @@
   font-size: 12px;
 }
 
-#api-key-input {
+#chatgpt-api-key,
+#gemini-api-key {
   width: calc(100% - 20px);
   padding: 8px;
   margin-bottom: 8px;
@@ -31,7 +53,8 @@
   font-size: 12px;
 }
 
-#save-api-key {
+/* Botones */
+#save-api-keys {
   width: 100%;
   padding: 8px;
   background-color: #4285f4;
@@ -40,12 +63,14 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+  margin-bottom: 10px;
 }
 
-#save-api-key:hover {
+#save-api-keys:hover {
   background-color: #3367d6;
 }
 
+/* Texto de instrucciones */
 .instructions {
   margin: 0;
   font-size: 12px;
@@ -53,6 +78,7 @@
   text-align: center;
 }
 
+/* Mensajes de estado */
 .status-message {
   margin-top: 10px;
   padding: 8px;
@@ -73,7 +99,8 @@
   border: 1px solid #f5c6cb;
 }
 
-/* Estilos para el botón flotante */
+/* ===== ESTILOS PARA LA EXTENSIÓN EN PÁGINAS WEB ===== */
+/* Botón flotante */
 .floating-button {
   position: fixed;
   bottom: 20px;
@@ -103,6 +130,7 @@
   transform: scale(0.95);
 }
 
+/* Display de texto */
 .text-display {
   position: fixed;
   bottom: 80px;
@@ -120,17 +148,42 @@
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
+  color: white;
 }
 
+/* Scrollbar personalizado para el display de texto */
 .text-display::-webkit-scrollbar {
   width: 6px;
 }
 
 .text-display::-webkit-scrollbar-thumb {
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.5);
   border-radius: 3px;
 }
 
+.text-display::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Clase utilitaria para ocultar elementos */
 .hidden {
   display: none;
+}
+
+/* ===== ESTILOS RESPONSIVOS ===== */
+@media (max-width: 400px) {
+  .popup-container {
+    width: 280px;
+    padding: 10px;
+  }
+  
+  .text-display {
+    max-width: 250px;
+    right: 10px;
+  }
+  
+  .floating-button {
+    right: 10px;
+    bottom: 10px;
+  }
 }
