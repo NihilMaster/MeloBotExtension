@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Text Reader",
+  "name": "Melo-bot",
   "version": "1.0",
-  "description": "Lee el contenido de textboxes y textareas",
-  "permissions": ["activeTab", "scripting"],
+  "description": "Lee el contenido que digitaste y te ayuda a ser más elocuente.",
+  "permissions": ["activeTab", "scripting", "storage"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
