@@ -6,27 +6,27 @@
 </head>
 <body>
   <div class="popup-container">
-    <h3>Text Reader</h3>
+    <h3>Melo-bot</h3>
     
     <div class="form-group">
       <label for="ai-provider">Seleccionar IA:</label>
       <select id="ai-provider">
-        <option value="chatgpt">ChatGPT</option>
         <option value="gemini">Gemini</option>
+        <option value="chatgpt">ChatGPT</option>
       </select>
     </div>
     
     <div id="chatgpt-key-section" class="api-key-section">
-      <label for="chatgpt-api-key">ChatGPT API Key:</label>
-      <input type="password" id="chatgpt-api-key" placeholder="sk-...">
+      <label for="chatgpt-api-key">API Key:</label>
+      <input type="password" id="chatgpt-api-key" placeholder="AIza... / sk-...">
     </div>
     
     <div id="gemini-key-section" class="api-key-section" style="display: none;">
-      <label for="gemini-api-key">Gemini API Key:</label>
+      <label for="gemini-api-key">API Key:</label>
       <input type="password" id="gemini-api-key" placeholder="Ingresa tu API key de Gemini">
     </div>
     
-    <button id="save-api-keys">Guardar configuración</button>
+    <button id="save-api-keys">Guardar API Key</button>
     
     <p class="instructions">Haz clic en el botón flotante para analizar texto</p>
     

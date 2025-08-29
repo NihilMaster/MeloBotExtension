@@ -18,19 +18,26 @@
     }
   };
 
-  window.PROMPTS = {
-    ANALYSIS: "Analiza el siguiente texto y determina el tipo de contenido. Responde EXCLUSIVAMENTE con uno de estos tres números: " +
-              "1 - Si el texto es apropiado y no contiene lenguaje ofensivo. " +
-              "2 - Si el texto contiene palabras vulgares u ofensivas. " +
-              "3 - Si el texto contiene discursos de odio o lenguaje discriminatorio. " +
-              "No incluyas explicaciones, comentarios ni texto adicional. Solo responde con el número correspondiente (1, 2 o 3)."
-  };
+window.PROMPTS = {
+  ANALYSIS: "Analyze the following text and determine the type of content. Respond EXCLUSIVELY with one of these three numbers: " +
+            "1 - If the text is appropriate and does not contain offensive language. " +
+            "2 - If the text contains vulgar or offensive words. " +
+            "3 - If the text contains hate speech or discriminatory language. " +
+            "Do not include explanations, comments, or additional text. Only respond with the corresponding number (1, 2, or 3)."
+};
 
   // Mensajes predefinidos para cada estado
   window.RESPONSE_MESSAGES = {
-    1: "¡Excelente! Tu mensaje es respetuoso y apropiado. Sigue comunicándote de manera positiva. 🌟",
-    2: "Hemos detectado algunas palabras que podrían ser ofensivas. Te invitamos a expresarte de manera más respetuosa. 💬",
-    3: "Este contenido contiene lenguaje de odio. Por favor, reconsidera tu mensaje para promover un ambiente inclusivo. 🤝"
+    1: "¡Excelente! Tu mensaje es respetuoso y apropiado. 🌟 Sigue comunicándote de manera positiva.",
+    2: "⚠️ Tu texto contiene palabras que pueden ser ofensivas. Te invitamos a expresarte de manera más respetuosa.",
+    3: "🚫 Hemos detectado discurso de odio en tu mensaje. Por favor, reconsidera tu forma de expresión y promueve un ambiente de respeto para todos."
+  };
+
+  // Colores de fondo para cada estado
+  window.STATUS_COLORS = {
+    1: "#99F499", // Verde - apropiado
+    2: "#F4F499", // Amarillo - potencialmente ofensivo
+    3: "#F49999"  // Rojo - discurso de odio
   };
 
   window.STORAGE_KEYS = {

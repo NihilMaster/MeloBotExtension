@@ -137,7 +137,7 @@
   right: 20px;
   max-width: 300px;
   max-height: 200px;
-  background-color: rgb(60, 3, 218);
+  background-color: #9dc8f0;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 15px;
@@ -148,7 +148,21 @@
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
-  color: white;
+  color: rgb(0, 0, 0);
+  transition: background-color 0.3s ease;
+}
+
+/* Estados específicos de color (backup por si JavaScript no funciona) */
+.text-display.status-ok {
+  background-color: #99F499 !important; /* Verde - correcto */
+}
+
+.text-display.status-warning {
+  background-color: #F4F499 !important; /* Amarillo - ofensivo */
+}
+
+.text-display.status-danger {
+  background-color: #F49999 !important; /* Rojo - odio */
 }
 
 /* Scrollbar personalizado para el display de texto */
@@ -157,12 +171,12 @@
 }
 
 .text-display::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 3px;
 }
 
 .text-display::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* Clase utilitaria para ocultar elementos */

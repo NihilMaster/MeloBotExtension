@@ -1,0 +1,29 @@
+# .github/workflows/update-readme.yml
+
+name: Update README Date
+
+# Configura el disparador para que se ejecute una vez al día
+on:
+  schedule:
+    - cron: '0 0 * * *' # Esto se ejecuta a medianoche UTC
+  workflow_dispatch: # Permite la ejecución manual
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Para asegurarnos de tener todo el historial y no solo el último commit
+
+      - name: Update README with current date
+        run: |
+          DATE=$(date +'%d de %B de %Y')
+          sed -i "s|Última actualización: .*|Última actualización: $DATE 📅|" README.md
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'GitHubActions: Update README date'
+          branch: master

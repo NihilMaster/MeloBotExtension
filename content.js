@@ -319,6 +319,7 @@
           // Mostrar mensaje de carga
           this.textDisplay.textContent = 'Analizando contenido...';
           this.textDisplay.classList.remove('hidden');
+          this.textDisplay.style.backgroundColor = '';
           this.isVisible = true;
           
           try {
@@ -331,10 +332,11 @@
             }
             
             // Obtener análisis (siempre usa el prompt de ANALYSIS)
-            const analysis = await this.apiHandler.analyzeText(text);
+            const analysisResult = await this.apiHandler.analyzeText(text);
             
-            if (analysis) {
-              this.textDisplay.textContent = analysis;
+            if (analysisResult) {
+              this.textDisplay.textContent = analysisResult.message;
+              this.textDisplay.style.backgroundColor = analysisResult.color; // Aplicar color según el estado
             }
           } catch (error) {
             console.error('Error analizando texto:', error);
@@ -347,16 +349,18 @@
           this.textDisplay.style.right = `${window.innerWidth - buttonRect.right}px`;
           
           // Añadir scroll si el texto es muy largo
-          this.textDisplay.style.overflowY = text.length > 500 ? 'auto' : 'hidden';
+          this.textDisplay.style.overflowY = 'auto';
           
         } else {
           this.textDisplay.textContent = 'No hay texto en el campo seleccionado';
           this.textDisplay.classList.remove('hidden');
+          this.textDisplay.style.backgroundColor = '';
           this.isVisible = true;
         }
       } else {
         this.textDisplay.textContent = 'Selecciona primero un campo de texto';
         this.textDisplay.classList.remove('hidden');
+        this.textDisplay.style.backgroundColor = '';
         this.isVisible = true;
         
         setTimeout(() => {
@@ -367,6 +371,7 @@
 
     hideTextDisplay() {
       this.textDisplay.classList.add('hidden');
+      this.textDisplay.style.backgroundColor = '';
       this.isVisible = false;
     }
   }
