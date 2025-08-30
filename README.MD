@@ -168,9 +168,9 @@ Desarrollado con ❤️ para **CiberPaz** - Promoviendo un internet más seguro 
 ## 📞 Soporte y contacto
 
 ¿Tienes preguntas o necesitas ayuda?  
-📧 Email: <soporte@ciberpaz.org>  
+📧 Email: <cadalagu@hotmail.com>  
 🐛 Reportar issues: [GitHub Issues](https://github.com/NihilMaster/MeloBotExtension/issues)  
-💬 Website: [Website de CiberPaz](https://ciberpaz.gov.co/portal/)
+💬 Website: [Website de Chomelo](www.chomelo.org)
 
 ---
 

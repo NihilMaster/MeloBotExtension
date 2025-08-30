@@ -19,7 +19,7 @@
   };
 
 window.PROMPTS = {
-  ANALYSIS: "Analyze the following text and determine the type of content. Respond EXCLUSIVELY with one of these three numbers: " +
+  ANALYSIS: "Analyze the following text and determine the type of content. Pay special attention to Colombian slang or regionalisms that are considered offensive. Respond EXCLUSIVELY with one of these three numbers: " +
             "1 - If the text is appropriate and does not contain offensive language. " +
             "2 - If the text contains vulgar or offensive words. " +
             "3 - If the text contains hate speech or discriminatory language. " +

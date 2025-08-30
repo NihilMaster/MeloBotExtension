@@ -17,22 +17,23 @@
     </div>
     
     <div id="chatgpt-key-section" class="api-key-section">
-      <label for="chatgpt-api-key">API Key:</label>
-      <input type="password" id="chatgpt-api-key" placeholder="AIza... / sk-...">
+      <label for="chatgpt-api-key">API Key de ChatGPT:</label>
+      <input type="password" id="chatgpt-api-key" placeholder="sk-...">
     </div>
     
-    <div id="gemini-key-section" class="api-key-section" style="display: none;">
-      <label for="gemini-api-key">API Key:</label>
-      <input type="password" id="gemini-api-key" placeholder="Ingresa tu API key de Gemini">
+    <div id="gemini-key-section" class="api-key-section">
+      <label for="gemini-api-key">API Key de Gemini:</label>
+      <input type="password" id="gemini-api-key" placeholder="AIza...">
     </div>
     
-    <button id="save-api-keys">Guardar API Key</button>
+    <button id="save-api-keys">Guardar API Keys</button>
     
     <p class="instructions">Haz clic en el botón flotante para analizar texto</p>
     
     <div id="status-message" class="status-message"></div>
   </div>
   
-  <script type="module" src="popup.js"></script>
+  <script src="constants.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>

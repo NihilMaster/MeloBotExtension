@@ -1,5 +1,5 @@
 {
-  "manifest_version": 4,
+  "manifest_version": 3,
   "name": "Melo-bot",
   "version": "2.5",
   "description": "Lee el contenido que digitaste y te ayuda a ser más elocuente.",

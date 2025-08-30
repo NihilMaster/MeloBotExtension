@@ -1,18 +1,28 @@
-// popup.js - Modificado para usar variables globales
 document.addEventListener('DOMContentLoaded', function() {
   const chatGptKeyInput = document.getElementById('chatgpt-api-key');
   const geminiKeyInput = document.getElementById('gemini-api-key');
   const saveButton = document.getElementById('save-api-keys');
   const providerSelect = document.getElementById('ai-provider');
-  const promptSelect = document.getElementById('prompt-type');
   const statusMessage = document.getElementById('status-message');
+  
+  // Mostrar u ocultar campos según el proveedor seleccionado
+  function updateUI() {
+    const selectedProvider = providerSelect.value;
+    
+    if (selectedProvider === 'chatgpt') {
+      document.getElementById('chatgpt-key-section').style.display = 'block';
+      document.getElementById('gemini-key-section').style.display = 'none';
+    } else if (selectedProvider === 'gemini') {
+      document.getElementById('chatgpt-key-section').style.display = 'none';
+      document.getElementById('gemini-key-section').style.display = 'block';
+    }
+  }
   
   // Cargar configuración guardada
   chrome.storage.local.get([
     window.STORAGE_KEYS.CHAT_GPT_API_KEY,
     window.STORAGE_KEYS.GEMINI_API_KEY,
-    window.STORAGE_KEYS.SELECTED_AI_PROVIDER,
-    window.STORAGE_KEYS.SELECTED_PROMPT
+    window.STORAGE_KEYS.SELECTED_AI_PROVIDER
   ], function(result) {
     if (result[window.STORAGE_KEYS.CHAT_GPT_API_KEY]) {
       chatGptKeyInput.value = result[window.STORAGE_KEYS.CHAT_GPT_API_KEY];
@@ -23,9 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (result[window.STORAGE_KEYS.SELECTED_AI_PROVIDER]) {
       providerSelect.value = result[window.STORAGE_KEYS.SELECTED_AI_PROVIDER];
     }
-    if (result[window.STORAGE_KEYS.SELECTED_PROMPT]) {
-      promptSelect.value = result[window.STORAGE_KEYS.SELECTED_PROMPT];
-    }
     
     updateUI();
   });
@@ -35,40 +42,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatGptKey = chatGptKeyInput.value.trim();
     const geminiKey = geminiKeyInput.value.trim();
     const selectedProvider = providerSelect.value;
-    const selectedPrompt = promptSelect.value;
     
     const config = {
-      [window.STORAGE_KEYS.SELECTED_AI_PROVIDER]: selectedProvider,
-      [window.STORAGE_KEYS.SELECTED_PROMPT]: selectedPrompt
+      [window.STORAGE_KEYS.SELECTED_AI_PROVIDER]: selectedProvider
     };
     
+    // Solo guardar la clave si tiene valor
     if (chatGptKey) {
       config[window.STORAGE_KEYS.CHAT_GPT_API_KEY] = chatGptKey;
+    } else {
+      // Si está vacío, eliminar del almacenamiento
+      chrome.storage.local.remove(window.STORAGE_KEYS.CHAT_GPT_API_KEY);
     }
     
     if (geminiKey) {
       config[window.STORAGE_KEYS.GEMINI_API_KEY] = geminiKey;
+    } else {
+      chrome.storage.local.remove(window.STORAGE_KEYS.GEMINI_API_KEY);
     }
     
     chrome.storage.local.set(config, function() {
-      showStatus('Configuración guardada correctamente', 'success');
-      updateUI();
+      if (chrome.runtime.lastError) {
+        showStatus('Error al guardar: ' + chrome.runtime.lastError.message, 'error');
+      } else {
+        showStatus('Configuración guardada correctamente', 'success');
+      }
     });
   });
-  
-  // Actualizar UI según el proveedor seleccionado
-  function updateUI() {
-    const selectedProvider = providerSelect.value;
-    document.querySelectorAll('.api-key-section').forEach(section => {
-      section.style.display = 'none';
-    });
-    
-    if (selectedProvider === window.AI_PROVIDERS.CHAT_GPT) {
-      document.getElementById('chatgpt-key-section').style.display = 'block';
-    } else if (selectedProvider === window.AI_PROVIDERS.GEMINI) {
-      document.getElementById('gemini-key-section').style.display = 'block';
-    }
-  }
   
   // Mostrar mensajes de estado
   function showStatus(message, type) {
