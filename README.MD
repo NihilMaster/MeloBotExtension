@@ -170,7 +170,7 @@ Desarrollado con ❤️ para **CiberPaz** - Promoviendo un internet más seguro 
 ¿Tienes preguntas o necesitas ayuda?  
 📧 Email: <cadalagu@hotmail.com>  
 🐛 Reportar issues: [GitHub Issues](https://github.com/NihilMaster/MeloBotExtension/issues)  
-💬 Website: [Website de Chomelo](www.chomelo.org)
+💬 Website: [Website de Chomelo](https://www.chomelo.org/melobot)
 
 ---
 

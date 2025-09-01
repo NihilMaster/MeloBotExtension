@@ -184,6 +184,21 @@
   display: none;
 }
 
+/* ===== CONTENEDOR DE IMÁGENES ===== */
+.image-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding: 5px;
+}
+
+.brand-image {
+  width: 45%; /* Cada imagen ocupa el 45% del contenedor */
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 /* ===== ESTILOS RESPONSIVOS ===== */
 @media (max-width: 400px) {
   .popup-container {
