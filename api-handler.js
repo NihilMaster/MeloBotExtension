@@ -6,23 +6,26 @@
       this.apiKey = null;
     }
 
-    // Inicializar con el proveedor seleccionado
     async initialize() {
-      const config = await chrome.storage.local.get([
-        window.STORAGE_KEYS.SELECTED_AI_PROVIDER,
-        window.STORAGE_KEYS.CHAT_GPT_API_KEY,
-        window.STORAGE_KEYS.GEMINI_API_KEY
-      ]);
+      try {
+        // Usar mensajería para obtener la configuración
+        const config = await chrome.runtime.sendMessage({
+          type: 'GET_STORAGE_CONFIG'
+        });
+        
+        this.provider = config.selectedAIProvider || 'chatgpt';
+        
+        if (this.provider === 'chatgpt') {
+          this.apiKey = config.chatGptApiKey;
+        } else if (this.provider === 'gemini') {
+          this.apiKey = config.geminiApiKey;
+        }
 
-      this.provider = config[window.STORAGE_KEYS.SELECTED_AI_PROVIDER] || window.AI_PROVIDERS.CHAT_GPT;
-      
-      if (this.provider === window.AI_PROVIDERS.CHAT_GPT) {
-        this.apiKey = config[window.STORAGE_KEYS.CHAT_GPT_API_KEY];
-      } else if (this.provider === window.AI_PROVIDERS.GEMINI) {
-        this.apiKey = config[window.STORAGE_KEYS.GEMINI_API_KEY];
+        return !!this.apiKey;
+      } catch (error) {
+        console.error('Error initializing APIHandler:', error);
+        return false;
       }
-
-      return !!this.apiKey;
     }
 
     // Analizar texto con el proveedor configurado

@@ -7,6 +7,7 @@
       this.isVisible = false;
       this.currentTextElement = null;
       this.apiHandler = new window.APIHandler();
+      this.isProcessing = false;
       this.init();
     }
 
@@ -44,9 +45,10 @@
     }
 
     addEventListeners() {
-      this.floatingButton.addEventListener('click', (e) => {
+      this.floatingButton.addEventListener('click', async (e) => {
         e.stopPropagation();
-        this.toggleTextDisplay();
+        if (this.isProcessing) return;
+        await this.toggleTextDisplay();
       });
 
       // Cerrar el display al hacer clic fuera
@@ -62,9 +64,8 @@
       document.addEventListener('focusin', this.handleFocusChange.bind(this));
       document.addEventListener('focusout', this.handleFocusChange.bind(this));
       document.addEventListener('input', this.handleFocusChange.bind(this));
-      
       // También verificar periódicamente por cambios
-      setInterval(() => this.updateButtonVisibility(), 1000);
+      setInterval(() => this.updateButtonVisibility(), 500);
     }
 
     handleFocusChange() {
@@ -95,7 +96,6 @@
         '.tox-edit-area', // TinyMCE
         '.monaco-editor' // Monaco Editor (VSCode)
       ];
-      
       return standardTextElements.some(selector => element.matches(selector)) ||
             editableElements.some(selector => element.matches(selector)) ||
             this.isNestedEditable(element);
@@ -124,7 +124,6 @@
             }
           }
         }
-        
         parent = parent.parentElement;
       }
       return false;
@@ -148,9 +147,7 @@
               return iframeActiveElement;
             }
           }
-        } catch (e) {
-          // Política de mismo origen
-        }
+        } catch (e) {}
       }
       
       // Buscar elementos editables que puedan tener el foco real
@@ -158,7 +155,6 @@
       const potentialEditors = document.querySelectorAll(
         '.ProseMirror, .CodeMirror, [contenteditable="true"]'
       );
-      
       for (const editor of potentialEditors) {
         if (editor.contains(activeElement) || this.hasVisibleSelection(editor)) {
           return editor;
@@ -174,7 +170,6 @@
           return nestedTextElement;
         }
       }
-      
       return null;
     }
 
@@ -186,24 +181,19 @@
           const range = selection.getRangeAt(0);
           return element.contains(range.commonAncestorContainer);
         }
-      } catch (e) {
-        // Ignorar errores de selección
-      }
+      } catch (e) {}
       return false;
     }
 
     getElementText(element) {
       if (!element) return '';
-      
       try {
         // Elementos de formulario estándar
         if (element.tagName === 'TEXTAREA' || 
             (element.tagName === 'INPUT' && 
             ['text', 'password', 'email', 'search', 'url', 'tel'].includes(element.type))) {
           return element.value || '';
-        } 
-        // Elementos editables modernos
-        else if (element.isContentEditable || 
+        } else if (element.isContentEditable || 
                 element.classList.contains('ProseMirror') ||
                 element.classList.contains('CodeMirror') ||
                 this.isNestedEditable(element)) {
@@ -216,34 +206,26 @@
           
           // Para editores de texto enriquecido, obtener texto plano
           return element.textContent || element.innerText || '';
-        } 
-        // Entradas estándar
-        else if (element.tagName === 'INPUT') {
+        } else if (element.tagName === 'INPUT') {
           return element.value || '';
         }
       } catch (e) {
         console.log('Error reading text:', e);
       }
-      
       return '';
     }
 
     // Método específico para extraer texto de CodeMirror
     getCodeMirrorText(element) {
       try {
-        // Intentar acceder a la API de CodeMirror si está disponible
         const codeMirrorElement = element.closest('.CodeMirror') || element;
         if (codeMirrorElement.CodeMirror) {
           return codeMirrorElement.CodeMirror.getValue();
         }
-        
-        // Fallback: buscar el área de texto real
         const textArea = codeMirrorElement.querySelector('textarea');
         if (textArea) {
           return textArea.value;
         }
-        
-        // Último recurso: obtener texto del contenido
         return codeMirrorElement.textContent || '';
       } catch (e) {
         console.log('Error extracting CodeMirror text:', e);
@@ -253,8 +235,13 @@
 
     updateButtonVisibility() {
       const textElement = this.getFocusedTextElement();
-      
       if (textElement && this.hasContent(textElement)) {
+        const text = this.getElementText(textElement) || '';
+        if (text.length > 600) {
+          this.floatingButton.style.display = 'none';
+          this.currentTextElement = textElement;
+          return;
+        }
         this.floatingButton.style.display = 'flex';
         
         // Mejorar el texto del tooltip
@@ -264,7 +251,6 @@
         } else if (!fieldName && textElement.classList.contains('CodeMirror')) {
           fieldName = 'Editor de código';
         }
-        
         this.floatingButton.title = 'Analizar texto: ' + fieldName;
         this.currentTextElement = textElement;
       } else {
@@ -285,7 +271,6 @@
         return element.children.length > 0 || 
               element.querySelector('*') !== null;
       }
-      
       return false;
     }
 
@@ -294,8 +279,6 @@
       this.textDisplay.textContent = message;
       this.textDisplay.classList.remove('hidden');
       this.isVisible = true;
-      
-      // Ocultar después de 5 segundos
       setTimeout(() => {
         this.hideTextDisplay();
       }, 5000);
@@ -311,46 +294,43 @@
 
     async showTextDisplay() {
       const textElement = this.currentTextElement || this.getFocusedTextElement();
-      
+      if (this.isProcessing) return;
       if (textElement) {
         const text = this.getElementText(textElement);
-        
+        const count = text.length;
+        if (count > 600) {
+          this.floatingButton.style.display = 'none';
+          this.showError('El texto supera el límite de 600 caracteres.');
+          return;
+        }
         if (text.trim()) {
-          // Mostrar mensaje de carga
-          this.textDisplay.textContent = 'Analizando contenido...';
+          this.textDisplay.innerHTML = '<span class=\"spinner\"></span> Analizando contenido...';
           this.textDisplay.classList.remove('hidden');
           this.textDisplay.style.backgroundColor = '';
           this.isVisible = true;
-          
+          this.isProcessing = true;
           try {
-            // Inicializar el manejador de API
             const isInitialized = await this.apiHandler.initialize();
-            
             if (!isInitialized) {
               this.showError('Por favor configura una API key en la extensión');
+              this.isProcessing = false;
               return;
             }
             
             // Obtener análisis (siempre usa el prompt de ANALYSIS)
             const analysisResult = await this.apiHandler.analyzeText(text);
-            
             if (analysisResult) {
               this.textDisplay.textContent = analysisResult.message;
               this.textDisplay.style.backgroundColor = analysisResult.color; // Aplicar color según el estado
             }
           } catch (error) {
-            console.error('Error analizando texto:', error);
-            this.showError('Error: ' + error.message);
+            this.showError('Error: ' + (error.message || error));
           }
-          
-          // Posicionar cerca del botón
+          this.isProcessing = false;
           const buttonRect = this.floatingButton.getBoundingClientRect();
           this.textDisplay.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
           this.textDisplay.style.right = `${window.innerWidth - buttonRect.right}px`;
-          
-          // Añadir scroll si el texto es muy largo
           this.textDisplay.style.overflowY = 'auto';
-          
         } else {
           this.textDisplay.textContent = 'No hay texto en el campo seleccionado';
           this.textDisplay.classList.remove('hidden');
@@ -362,7 +342,6 @@
         this.textDisplay.classList.remove('hidden');
         this.textDisplay.style.backgroundColor = '';
         this.isVisible = true;
-        
         setTimeout(() => {
           this.hideTextDisplay();
         }, 3000);

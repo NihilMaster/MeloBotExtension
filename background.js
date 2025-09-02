@@ -2,6 +2,22 @@
 let pendingTabId = null;
 let targetUrl = '';
 
+// Obtener configuración de almacenamiento
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'GET_STORAGE_CONFIG') {
+    chrome.storage.local.get([
+      'selectedAIProvider',
+      'chatGptApiKey', 
+      'geminiApiKey'
+    ]).then((result) => {
+      sendResponse(result);
+    }).catch((error) => {
+      sendResponse({ error: error.message });
+    });
+    return true; // Indica que la respuesta será asíncrona
+  }
+});
+
 // Escuchar cuando se intente abrir una pestaña
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'OPEN_FORM_WITH_PRESET') {
