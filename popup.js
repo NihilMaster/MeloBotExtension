@@ -83,6 +83,35 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Event listeners para cambios
   providerSelect.addEventListener('change', updateUI);
+
+  document.querySelector('.image-container').addEventListener('click', function() {
+    abrirFormularioPreCargado();
+  });
   
   console.log('Text Reader extension loaded');
 });
+
+/* 
+// Función para registrar logs en el extensionStorage.
+function logToStorage(message) {
+  chrome.storage.local.get({ logs: [] }, (data) => {
+    const logs = data.logs;
+    logs.push(`[${new Date().toISOString()}] ${message}`);
+    chrome.storage.local.set({ logs });
+  });
+} */
+
+function abrirFormularioPreCargado() {
+  // logToStorage('✅ abrirFormularioPreCargado llamado');
+
+  chrome.runtime.sendMessage({
+    type: 'OPEN_FORM_WITH_PRESET',
+    url: 'https://sensibilizacion.ciberpaz.gov.co/#/data-ciberpaz/response/116?type=public'
+  }, (response) => {
+    if (chrome.runtime.lastError) {
+      // logToStorage('❌ Error al abrir pestaña: ' + chrome.runtime.lastError.message);
+    } else {
+      // logToStorage('✅ Pestaña abierta, inyección pendiente...');
+    }
+  });
+}

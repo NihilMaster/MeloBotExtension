@@ -3,18 +3,23 @@
   "name": "Melo-bot",
   "version": "2.6",
   "description": "Lee el contenido que digitaste y te ayuda a ser más elocuente.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "webNavigation"],
   "host_permissions": [
     "https://api.openai.com/",
-    "https://generativelanguage.googleapis.com/"
+    "https://generativelanguage.googleapis.com/",
+    "https://sensibilizacion.ciberpaz.gov.co/*"
   ],
   "action": {
     "default_popup": "popup.html",
+    "default_title": "Melo-bot",
     "default_icon": {
       "16": "img/icon16.png",
       "48": "img/icon48.png",
       "128": "img/icon128.png"
     }
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
