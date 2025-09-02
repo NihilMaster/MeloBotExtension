@@ -1,12 +1,14 @@
-# .github/workflows/update-readme.yml
-
 name: Update README Date
 
 # Configura el disparador para que se ejecute una vez al día
 on:
   schedule:
-    - cron: '0 0 * * *' # Esto se ejecuta a medianoche UTC
-  workflow_dispatch: # Permite la ejecución manual
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+# Configura permisos globales
+permissions:
+  contents: write
 
 jobs:
   update-readme:
@@ -15,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Para asegurarnos de tener todo el historial y no solo el último commit
+          fetch-depth: 0
 
       - name: Update README with current date
         run: |
