@@ -1,4 +1,4 @@
-// content.js - Actualizado para el nuevo sistema de 3 estados
+// content.js - Mejorado para posicionamiento correcto en Gmail
 (function() {
   class TextReader {
     constructor() {
@@ -8,6 +8,8 @@
       this.currentTextElement = null;
       this.apiHandler = new window.APIHandler();
       this.isProcessing = false;
+      this.gmailObserver = null;
+      this.gmailScrollHandler = null;
       this.init();
     }
 
@@ -16,6 +18,8 @@
       this.createTextDisplay();
       this.addEventListeners();
       this.updateButtonVisibility();
+      this.observeGmailChanges();
+      this.setupGmailScrollHandler();
     }
 
     createFloatingButton() {
@@ -29,7 +33,35 @@
       this.floatingButton.className = 'floating-button';
       this.floatingButton.innerHTML = `<img src="${chrome.runtime.getURL('img/icon48.png')}" alt="Icono" />`;
       this.floatingButton.title = 'Analizar texto del campo seleccionado';
+      this.floatingButton.style.zIndex = '100000';
       document.body.appendChild(this.floatingButton);
+      
+      // Aplicar estilos específicos para Gmail
+      this.applyGmailSpecificStyles();
+    }
+
+    applyGmailSpecificStyles() {
+      // Estilos específicos para Gmail
+      if (window.location.hostname.includes('mail.google.com')) {
+        const style = document.createElement('style');
+        style.textContent = `
+          .floating-button {
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            top: auto !important;
+            transform: none !important;
+            z-index: 100000 !important;
+          }
+          
+          /* Prevenir que Gmail afecte el posicionamiento */
+          .floating-button[style*="top"] {
+            top: auto !important;
+            bottom: 20px !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     }
 
     createTextDisplay() {
@@ -64,12 +96,82 @@
       document.addEventListener('focusin', this.handleFocusChange.bind(this));
       document.addEventListener('focusout', this.handleFocusChange.bind(this));
       document.addEventListener('input', this.handleFocusChange.bind(this));
+      document.addEventListener('DOMSubtreeModified', this.handleGmailChanges.bind(this));
+      
       // También verificar periódicamente por cambios
       setInterval(() => this.updateButtonVisibility(), 500);
+      
+      // Prevenir que Gmail mueva el botón
+      this.preventGmailLayoutShifts();
+    }
+
+    // Prevenir que Gmail afecte el posicionamiento del botón
+    preventGmailLayoutShifts() {
+      if (window.location.hostname.includes('mail.google.com')) {
+        // Observar cambios en el estilo del botón
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              this.fixButtonPosition();
+            }
+          });
+        });
+        
+        observer.observe(this.floatingButton, { attributes: true });
+      }
+    }
+    
+    fixButtonPosition() {
+      if (window.location.hostname.includes('mail.google.com')) {
+        // Forzar la posición correcta
+        this.floatingButton.style.position = 'fixed';
+        this.floatingButton.style.bottom = '20px';
+        this.floatingButton.style.right = '20px';
+        this.floatingButton.style.top = 'auto';
+      }
+    }
+
+    // Observar cambios específicos en Gmail
+    observeGmailChanges() {
+      if (window.location.hostname.includes('mail.google.com')) {
+        this.gmailObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              this.updateButtonVisibility();
+              this.fixButtonPosition();
+            }
+          });
+        });
+
+        this.gmailObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+      }
+    }
+    
+    // Configurar manejador de scroll para Gmail
+    setupGmailScrollHandler() {
+      if (window.location.hostname.includes('mail.google.com')) {
+        this.gmailScrollHandler = () => {
+          this.fixButtonPosition();
+        };
+        
+        window.addEventListener('scroll', this.gmailScrollHandler);
+      }
     }
 
     handleFocusChange() {
       this.updateButtonVisibility();
+    }
+
+    // Manejar cambios específicos en Gmail
+    handleGmailChanges() {
+      const gmailEditor = document.querySelector('.Am.aiL.Al.editable');
+      if (gmailEditor && this.currentTextElement !== gmailEditor) {
+        this.updateButtonVisibility();
+      }
     }
 
     isTextElement(element) {
@@ -78,6 +180,14 @@
       // Verificar si el elemento tiene tamaño mínimo para ser interactivo
       const rect = element.getBoundingClientRect();
       if (rect.width < 10 || rect.height < 10) return false;
+      
+      // Elementos específicos de Gmail
+      const gmailSelectors = [
+        '.Am.aiL.Al.editable', // Editor principal de Gmail
+        '[aria-label="Cuerpo del mensaje"]', // Atributo ARIA de Gmail
+        '.aoD.hl', // Campo "Para" en Gmail
+        '.aoD.az8', // Campo "Asunto" en Gmail
+      ];
       
       // Elementos de formulario estándar
       const standardTextElements = [
@@ -96,9 +206,11 @@
         '.tox-edit-area', // TinyMCE
         '.monaco-editor' // Monaco Editor (VSCode)
       ];
-      return standardTextElements.some(selector => element.matches(selector)) ||
-            editableElements.some(selector => element.matches(selector)) ||
-            this.isNestedEditable(element);
+      
+      return gmailSelectors.some(selector => element.matches(selector)) ||
+             standardTextElements.some(selector => element.matches(selector)) ||
+             editableElements.some(selector => element.matches(selector)) ||
+             this.isNestedEditable(element);
     }
 
     // Método para detectar elementos editables anidados
@@ -132,6 +244,12 @@
     getFocusedTextElement() {
       const activeElement = document.activeElement;
       
+      // Detectar específicamente el editor de Gmail
+      const gmailEditor = document.querySelector('.Am.aiL.Al.editable[contenteditable="true"]');
+      if (gmailEditor && (gmailEditor.contains(activeElement) || gmailEditor.textContent.trim() !== '')) {
+        return gmailEditor;
+      }
+      
       // Verificar si el elemento activo es un campo de texto
       if (this.isTextElement(activeElement)) {
         return activeElement;
@@ -151,9 +269,8 @@
       }
       
       // Buscar elementos editables que puedan tener el foco real
-      // (muchos editores modernos manejan el foco de manera no convencional)
       const potentialEditors = document.querySelectorAll(
-        '.ProseMirror, .CodeMirror, [contenteditable="true"]'
+        '.Am.aiL.Al.editable, .ProseMirror, .CodeMirror, [contenteditable="true"]'
       );
       for (const editor of potentialEditors) {
         if (editor.contains(activeElement) || this.hasVisibleSelection(editor)) {
@@ -188,6 +305,14 @@
     getElementText(element) {
       if (!element) return '';
       try {
+        // Elemento específico de Gmail
+        if (element.classList.contains('Am') && 
+            element.classList.contains('aiL') && 
+            element.classList.contains('Al') && 
+            element.classList.contains('editable')) {
+          return element.textContent || element.innerText || '';
+        }
+        
         // Elementos de formulario estándar
         if (element.tagName === 'TEXTAREA' || 
             (element.tagName === 'INPUT' && 
@@ -235,24 +360,54 @@
 
     updateButtonVisibility() {
       const textElement = this.getFocusedTextElement();
-      if (textElement && this.hasContent(textElement)) {
-        const text = this.getElementText(textElement) || '';
+      
+      // Detectar específicamente el editor de Gmail incluso si no tiene foco
+      const gmailEditor = document.querySelector('.Am.aiL.Al.editable[contenteditable="true"]');
+      const activeGmailEditor = gmailEditor && (gmailEditor.contains(document.activeElement) || 
+                            gmailEditor.textContent.trim() !== '');
+      
+      const targetElement = activeGmailEditor ? gmailEditor : textElement;
+      
+      if (targetElement && this.hasContent(targetElement)) {
+        const text = this.getElementText(targetElement) || '';
         if (text.length > 600) {
           this.floatingButton.style.display = 'none';
-          this.currentTextElement = textElement;
+          this.currentTextElement = targetElement;
           return;
         }
+        
         this.floatingButton.style.display = 'flex';
         
+        // Forzar posición correcta en Gmail
+        if (window.location.hostname.includes('mail.google.com')) {
+          this.floatingButton.style.position = 'fixed';
+          this.floatingButton.style.bottom = '20px';
+          this.floatingButton.style.right = '20px';
+          this.floatingButton.style.top = 'auto';
+        } else if (activeGmailEditor) {
+          // Posicionar el botón cerca del editor de Gmail
+          const rect = gmailEditor.getBoundingClientRect();
+          this.floatingButton.style.position = 'fixed';
+          this.floatingButton.style.bottom = `${window.innerHeight - rect.top - 20}px`;
+          this.floatingButton.style.right = '20px';
+        } else {
+          // Posicionamiento normal para otros elementos
+          this.floatingButton.style.position = 'fixed';
+          this.floatingButton.style.bottom = '20px';
+          this.floatingButton.style.right = '20px';
+        }
+        
         // Mejorar el texto del tooltip
-        let fieldName = textElement.placeholder || textElement.name || textElement.id || '';
-        if (!fieldName && textElement.classList.contains('ProseMirror')) {
+        let fieldName = targetElement.placeholder || targetElement.name || targetElement.id || '';
+        if (!fieldName && targetElement.classList.contains('ProseMirror')) {
           fieldName = 'Editor de texto';
-        } else if (!fieldName && textElement.classList.contains('CodeMirror')) {
+        } else if (!fieldName && targetElement.classList.contains('CodeMirror')) {
           fieldName = 'Editor de código';
+        } else if (!fieldName && targetElement.classList.contains('Am')) {
+          fieldName = 'Editor de Gmail';
         }
         this.floatingButton.title = 'Analizar texto: ' + fieldName;
-        this.currentTextElement = textElement;
+        this.currentTextElement = targetElement;
       } else {
         this.floatingButton.style.display = 'none';
         this.currentTextElement = null;
@@ -321,12 +476,14 @@
             const analysisResult = await this.apiHandler.analyzeText(text);
             if (analysisResult) {
               this.textDisplay.textContent = analysisResult.message;
-              this.textDisplay.style.backgroundColor = analysisResult.color; // Aplicar color según el estado
+              this.textDisplay.style.backgroundColor = analysisResult.color;
             }
           } catch (error) {
             this.showError('Error: ' + (error.message || error));
           }
           this.isProcessing = false;
+          
+          // Posicionar el display cerca del botón
           const buttonRect = this.floatingButton.getBoundingClientRect();
           this.textDisplay.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
           this.textDisplay.style.right = `${window.innerWidth - buttonRect.right}px`;
