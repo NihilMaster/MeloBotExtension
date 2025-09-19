@@ -1,9 +1,16 @@
 name: Update README Date
 
-# Configura el disparador para que se ejecute una vez al día
+# Configura el disparador para que se ejecute en push a master y manualmente
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches: [ master ]
+    paths:
+      - '**.js'
+      - '**.html'
+      - '**.css'
+      - '**.json'
+      - '**.md'
+      - 'manifest.json'
   workflow_dispatch:
 
 # Configura permisos globales
@@ -13,18 +20,46 @@ permissions:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
+    # Solo ejecutar si el evento es push (no schedule)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          since_last_remote_commit: 'true'
+
+      - name: Check if relevant files were changed
+        id: check-changes
+        run: |
+          # Convertir la lista de archivos cambiados a un array
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Changed files: $CHANGED_FILES"
+          
+          # Verificar si hay cambios relevantes
+          if echo "$CHANGED_FILES" | grep -E '\.(js|html|css|json|md)$' | grep -v 'README.md'; then
+            echo "Relevant changes detected"
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "No relevant changes detected"
+            echo "should_update=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Update README with current date
+        if: steps.check-changes.outputs.should_update == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           DATE=$(date +'%d de %B de %Y')
           sed -i "s|Última actualización: .*|Última actualización: $DATE 📅|" README.md
+          echo "Updated README with date: $DATE"
 
       - name: Commit and push changes
+        if: steps.check-changes.outputs.should_update == 'true' || github.event_name == 'workflow_dispatch'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'GitHubActions: Update README date'
