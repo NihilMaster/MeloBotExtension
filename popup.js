@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Event listeners para cambios
   providerSelect.addEventListener('change', updateUI);
 
-  document.querySelector('.image-container').addEventListener('click', function() {
+  document.querySelector('.clickable-logo').addEventListener('click', function() {
     abrirFormularioPreCargado();
   });
   
